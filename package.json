@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npx --yes tsc",
+    "build": "tsc",
     "dev": "nodemon src/index.ts",
-    "start": "pnpm build && node build/index.js"
+    "start": "node build/index.js"
   },
   "keywords": [],
   "author": "",
