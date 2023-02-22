@@ -1,8 +1,8 @@
 import { FastifyInstance, FastifyRequest } from "fastify";
-import { BadRequest } from "http-errors";
 
-import { dbClient, isValidMongoId } from "../../db";
+import { dbClient } from "../../db";
 import { Portfolio } from "../../db/models";
+import { isPortfolioExist } from "./helper";
 
 import { PortfolioAdd, PortfolioDelete, PortfolioGet } from "./schema";
 
@@ -11,7 +11,20 @@ export default async (app: FastifyInstance) => {
     handler: async (req, reply) => {
       const portfolios = await dbClient.PortfolioQueries?.find();
 
-      reply.send({ portfolios });
+      const portfolioStocks = await Promise.all(
+        portfolios?.map(async (folio) => {
+          const stocks = await dbClient.StockQueries?.findByPortfolioId(
+            folio._id
+          );
+
+          return {
+            ...folio.toObject(),
+            stocks,
+          };
+        }) ?? []
+      );
+
+      reply.send({ portfolios: portfolioStocks });
     },
   });
 
@@ -23,11 +36,7 @@ export default async (app: FastifyInstance) => {
     ) => {
       const id = req.query.id;
 
-      if (!isValidMongoId(id)) throw new BadRequest("Invalid portfolio Id");
-
-      const portfolio = await dbClient.PortfolioQueries?.findById(id);
-
-      if (!portfolio) throw new BadRequest("Invalid portfolio Id");
+      const portfolio = await isPortfolioExist(id);
 
       reply.send(portfolio);
     },
@@ -52,11 +61,7 @@ export default async (app: FastifyInstance) => {
     ) => {
       const id = req.query.id;
 
-      if (!isValidMongoId(id)) throw new BadRequest("Invalid portfolio Id");
-
-      const portfolio = await dbClient.PortfolioQueries?.findById(id);
-
-      if (!portfolio) throw new BadRequest("Invalid portfolio Id");
+      await isPortfolioExist(id);
 
       await dbClient.PortfolioQueries?.deleteById(id);
 
