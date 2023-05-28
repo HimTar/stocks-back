@@ -7,6 +7,7 @@ export const Config = {
   isProdEnvironment: false,
   databaseURL: "",
   port: 4000,
+  host: "0.0.0.0",
 };
 
 export const loadConfigs = () => {

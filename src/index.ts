@@ -19,7 +19,7 @@ const StartServer = async () => {
   registerRoutes(app);
 
   // Starting and Listening
-  app.listen({ port: Config.port }, function (err, address) {
+  app.listen({ port: Config.port, host: Config.host }, function (err, address) {
     if (err) {
       logger.error(JSON.stringify(err));
       process.exit(1);
